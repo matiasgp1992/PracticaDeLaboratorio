@@ -1,0 +1,28 @@
+<nav class="navbar navbar-expand navbar-dark bg-dark">
+  <div class="container">
+    <a class="navbar-brand" routerLink="/inicio">{{ auth.usuario()?.organizacionNombre }}</a>
+
+    <ul class="navbar-nav me-auto">
+      <li class="nav-item">
+        <a class="nav-link" routerLink="/inicio" routerLinkActive="active">Inicio</a>
+      </li>
+      @if (auth.esAdmin()) {
+        <li class="nav-item">
+          <a class="nav-link" routerLink="/usuarios" routerLinkActive="active">Equipo</a>
+        </li>
+      }
+    </ul>
+
+    <span class="navbar-text me-3">
+      {{ auth.usuario()?.nombre }} {{ auth.usuario()?.apellido }}
+      <span class="badge bg-secondary ms-1">{{ auth.usuario()?.rol }}</span>
+    </span>
+    <button type="button" class="btn btn-outline-light btn-sm" (click)="auth.logout()">
+      Cerrar sesión
+    </button>
+  </div>
+</nav>
+
+<main class="container py-4">
+  <router-outlet />
+</main>

@@ -1,0 +1,71 @@
+<div class="container d-flex align-items-center justify-content-center min-vh-100 py-4">
+  <div class="card shadow-sm w-100" style="max-width: 560px;">
+    <div class="card-body p-4">
+      <h1 class="h4 text-center mb-1">Registrá tu estudio</h1>
+      <p class="text-muted text-center mb-4">Vas a quedar como administrador y podrás sumar a tu equipo</p>
+
+      @if (error()) {
+        <div class="alert alert-danger py-2">{{ error() }}</div>
+      }
+
+      <form [formGroup]="form" (ngSubmit)="registrar()" novalidate>
+        <h2 class="h6 text-uppercase text-muted mb-3">Datos del estudio</h2>
+
+        <div class="row g-3 mb-4">
+          <div class="col-md-8">
+            <label for="nombreOrganizacion" class="form-label">Nombre del estudio</label>
+            <input id="nombreOrganizacion" class="form-control" formControlName="nombreOrganizacion"
+                   [class.is-invalid]="invalido('nombreOrganizacion')">
+            <div class="invalid-feedback">El nombre del estudio es obligatorio.</div>
+          </div>
+          <div class="col-md-4">
+            <label for="cuit" class="form-label">CUIT <span class="text-muted">(opcional)</span></label>
+            <input id="cuit" class="form-control" formControlName="cuit" placeholder="30-12345678-9"
+                   [class.is-invalid]="invalido('cuit')">
+            <div class="invalid-feedback">Máximo 13 caracteres.</div>
+          </div>
+        </div>
+
+        <h2 class="h6 text-uppercase text-muted mb-3">Tus datos</h2>
+
+        <div class="row g-3 mb-4">
+          <div class="col-md-6">
+            <label for="nombre" class="form-label">Nombre</label>
+            <input id="nombre" class="form-control" formControlName="nombre"
+                   [class.is-invalid]="invalido('nombre')">
+            <div class="invalid-feedback">El nombre es obligatorio.</div>
+          </div>
+          <div class="col-md-6">
+            <label for="apellido" class="form-label">Apellido</label>
+            <input id="apellido" class="form-control" formControlName="apellido"
+                   [class.is-invalid]="invalido('apellido')">
+            <div class="invalid-feedback">El apellido es obligatorio.</div>
+          </div>
+          <div class="col-md-6">
+            <label for="email" class="form-label">Email</label>
+            <input id="email" type="email" class="form-control" formControlName="email"
+                   [class.is-invalid]="invalido('email')">
+            <div class="invalid-feedback">Ingresá un email válido.</div>
+          </div>
+          <div class="col-md-6">
+            <label for="password" class="form-label">Contraseña</label>
+            <input id="password" type="password" class="form-control" formControlName="password"
+                   [class.is-invalid]="invalido('password')">
+            <div class="invalid-feedback">Mínimo 8 caracteres.</div>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary w-100" [disabled]="cargando()">
+          @if (cargando()) {
+            <span class="spinner-border spinner-border-sm me-2"></span>
+          }
+          Crear estudio
+        </button>
+      </form>
+
+      <p class="text-center mt-3 mb-0">
+        ¿Ya tenés cuenta? <a routerLink="/login">Iniciá sesión</a>
+      </p>
+    </div>
+  </div>
+</div>
