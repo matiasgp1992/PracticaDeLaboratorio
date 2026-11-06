@@ -36,3 +36,12 @@ export interface ErrorResponse {
   errores: Record<string, string> | null;
   timestamp: string;
 }
+
+export interface CrearUsuarioRequest {
+  nombre: string;
+  apellido: string;
+  email: string;
+  password: string;
+  rol: Rol;
+}
+
