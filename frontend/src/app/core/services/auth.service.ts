@@ -15,6 +15,10 @@ export class AuthService {
   readonly usuario = signal<Usuario | null>(this.leerSesion());
   readonly estaLogueado = computed(() => this.usuario() !== null);
   readonly esAdmin = computed(() => this.usuario()?.rol === 'ADMIN');
+  readonly puedeGestionar = computed(() => {
+    const rol = this.usuario()?.rol;
+    return rol === 'ADMIN' || rol === 'ARQUITECTO';
+  });
 
   login(datos: LoginRequest): Observable<AuthResponse> {
     return this.http.post<AuthResponse>('/api/auth/login', datos).pipe(

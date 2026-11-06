@@ -1,0 +1,86 @@
+<div class="mb-4">
+  <a routerLink="/clientes" class="text-decoration-none">&larr; Volver a clientes</a>
+  <h1 class="h3 mt-2 mb-0">{{ esEdicion() ? 'Editar cliente' : 'Nuevo cliente' }}</h1>
+</div>
+
+@if (cargando()) {
+  <div class="text-center py-5">
+    <div class="spinner-border text-secondary"></div>
+  </div>
+} @else {
+  <div class="card">
+    <div class="card-body">
+      @if (error()) {
+        <div class="alert alert-danger py-2">{{ error() }}</div>
+      }
+
+      <form [formGroup]="form" (ngSubmit)="guardar()" novalidate>
+        <label class="form-label d-block">Tipo de cliente</label>
+        <div class="btn-group mb-4" role="group">
+          <input type="radio" class="btn-check" id="tipo-fisica" name="tipo"
+                 formControlName="tipo" value="PERSONA_FISICA">
+          <label class="btn btn-outline-primary" for="tipo-fisica">Persona física</label>
+
+          <input type="radio" class="btn-check" id="tipo-juridica" name="tipo"
+                 formControlName="tipo" value="PERSONA_JURIDICA">
+          <label class="btn btn-outline-primary" for="tipo-juridica">Persona jurídica</label>
+        </div>
+
+        <div class="row g-3">
+          @if (esFisica()) {
+            <div class="col-md-6">
+              <label for="nombre" class="form-label">Nombre</label>
+              <input id="nombre" class="form-control" formControlName="nombre"
+                     [class.is-invalid]="invalido('nombre')">
+              <div class="invalid-feedback">El nombre es obligatorio.</div>
+            </div>
+            <div class="col-md-6">
+              <label for="apellido" class="form-label">Apellido</label>
+              <input id="apellido" class="form-control" formControlName="apellido"
+                     [class.is-invalid]="invalido('apellido')">
+              <div class="invalid-feedback">El apellido es obligatorio.</div>
+            </div>
+          } @else {
+            <div class="col-12">
+              <label for="razonSocial" class="form-label">Razón social</label>
+              <input id="razonSocial" class="form-control" formControlName="razonSocial"
+                     [class.is-invalid]="invalido('razonSocial')">
+              <div class="invalid-feedback">La razón social es obligatoria.</div>
+            </div>
+          }
+
+          <div class="col-md-4">
+            <label for="documento" class="form-label">{{ esFisica() ? 'DNI o CUIT' : 'CUIT' }}</label>
+            <input id="documento" class="form-control" formControlName="documento"
+                   [class.is-invalid]="invalido('documento')">
+            <div class="invalid-feedback">El documento es obligatorio (máximo 13 caracteres).</div>
+          </div>
+          <div class="col-md-4">
+            <label for="email" class="form-label">Email</label>
+            <input id="email" type="email" class="form-control" formControlName="email"
+                   [class.is-invalid]="invalido('email')">
+            <div class="invalid-feedback">Ingresá un email válido.</div>
+          </div>
+          <div class="col-md-4">
+            <label for="telefono" class="form-label">Teléfono</label>
+            <input id="telefono" class="form-control" formControlName="telefono">
+          </div>
+          <div class="col-12">
+            <label for="direccion" class="form-label">Dirección</label>
+            <input id="direccion" class="form-control" formControlName="direccion">
+          </div>
+        </div>
+
+        <div class="d-flex justify-content-end gap-2 mt-4">
+          <a routerLink="/clientes" class="btn btn-outline-secondary">Cancelar</a>
+          <button type="submit" class="btn btn-primary" [disabled]="guardando()">
+            @if (guardando()) {
+              <span class="spinner-border spinner-border-sm me-2"></span>
+            }
+            {{ esEdicion() ? 'Guardar cambios' : 'Crear cliente' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}

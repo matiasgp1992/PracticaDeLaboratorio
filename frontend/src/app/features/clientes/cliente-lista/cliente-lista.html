@@ -1,0 +1,124 @@
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h1 class="h3 mb-0">Clientes</h1>
+    <p class="text-muted mb-0">Personas físicas y jurídicas de tu estudio</p>
+  </div>
+  @if (puedeGestionar()) {
+    <a routerLink="/clientes/nuevo" class="btn btn-primary">Nuevo cliente</a>
+  }
+</div>
+
+@if (mensaje()) {
+  <div class="alert alert-success d-flex justify-content-between align-items-center py-2">
+    <span>{{ mensaje() }}</span>
+    <button type="button" class="btn-close" aria-label="Cerrar" (click)="mensaje.set(null)"></button>
+  </div>
+}
+
+@if (error()) {
+  <div class="alert alert-danger py-2">{{ error() }}</div>
+}
+
+<form [formGroup]="filtros" class="card card-body mb-3">
+  <div class="row g-2 align-items-center">
+    <div class="col-md-6">
+      <input type="search" class="form-control" formControlName="texto"
+             placeholder="Buscar por nombre, razón social, documento o email">
+    </div>
+    <div class="col-md-3">
+      <select class="form-select" formControlName="tipo">
+        <option value="">Todos los tipos</option>
+        <option value="PERSONA_FISICA">Persona física</option>
+        <option value="PERSONA_JURIDICA">Persona jurídica</option>
+      </select>
+    </div>
+    <div class="col-md-3">
+      <div class="form-check">
+        <input id="incluirInactivos" type="checkbox" class="form-check-input" formControlName="incluirInactivos">
+        <label for="incluirInactivos" class="form-check-label">Incluir dados de baja</label>
+      </div>
+    </div>
+  </div>
+</form>
+
+@if (cargando()) {
+  <div class="text-center py-5">
+    <div class="spinner-border text-secondary"></div>
+  </div>
+} @else if (resultado(); as r) {
+  <div class="card">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light">
+          <tr>
+            <th>Cliente</th>
+            <th>Tipo</th>
+            <th>Documento</th>
+            <th>Contacto</th>
+            <th>Estado</th>
+            @if (puedeGestionar()) {
+              <th class="text-end">Acciones</th>
+            }
+          </tr>
+        </thead>
+        <tbody>
+          @for (c of r.contenido; track c.id) {
+            <tr [class.text-muted]="!c.activo">
+              <td class="fw-semibold">{{ c.denominacion }}</td>
+              <td>{{ etiquetaTipo(c.tipo) }}</td>
+              <td>{{ c.documento }}</td>
+              <td>
+                <div>{{ c.email ?? '-' }}</div>
+                <small class="text-muted">{{ c.telefono ?? '' }}</small>
+              </td>
+              <td>
+                @if (c.activo) {
+                  <span class="badge bg-success">Activo</span>
+                } @else {
+                  <span class="badge bg-secondary">De baja</span>
+                }
+              </td>
+              @if (puedeGestionar()) {
+                <td class="text-end text-nowrap">
+                  @if (c.activo) {
+                    <a [routerLink]="['/clientes', c.id, 'editar']" class="btn btn-sm btn-outline-primary me-1">Editar</a>
+                    <button type="button" class="btn btn-sm btn-outline-danger" (click)="darDeBaja(c)">Dar de baja</button>
+                  } @else {
+                    <button type="button" class="btn btn-sm btn-outline-success" (click)="reactivar(c)">Reactivar</button>
+                  }
+                </td>
+              }
+            </tr>
+          } @empty {
+            <tr>
+              <td [attr.colspan]="puedeGestionar() ? 6 : 5" class="text-center text-muted py-4">
+                No se encontraron clientes.
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  @if (r.totalPaginas > 1) {
+    <div class="d-flex justify-content-between align-items-center mt-3">
+      <small class="text-muted">{{ r.totalElementos }} clientes en total</small>
+      <nav>
+        <ul class="pagination pagination-sm mb-0">
+          <li class="page-item" [class.disabled]="r.pagina === 0">
+            <button type="button" class="page-link" (click)="irAPagina(r.pagina - 1)">Anterior</button>
+          </li>
+          @for (p of paginas(); track p) {
+            <li class="page-item" [class.active]="p === r.pagina">
+              <button type="button" class="page-link" (click)="irAPagina(p)">{{ p + 1 }}</button>
+            </li>
+          }
+          <li class="page-item" [class.disabled]="r.pagina === r.totalPaginas - 1">
+            <button type="button" class="page-link" (click)="irAPagina(r.pagina + 1)">Siguiente</button>
+          </li>
+        </ul>
+      </nav>
+    </div>
+  }
+}

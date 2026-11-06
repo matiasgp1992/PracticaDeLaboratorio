@@ -49,4 +49,9 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(status)
                 .body(new ErrorResponse(status.value(), mensaje, errores, LocalDateTime.now()));
     }
+
+    @ExceptionHandler(DatosInvalidosException.class)
+    public ResponseEntity<ErrorResponse> datosInvalidos(DatosInvalidosException ex) {
+        return crear(HttpStatus.BAD_REQUEST, ex.getMessage(), ex.getErrores());
+    }
 }

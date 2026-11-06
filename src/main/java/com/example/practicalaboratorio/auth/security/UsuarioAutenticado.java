@@ -8,4 +8,7 @@ public record UsuarioAutenticado(
         Long organizacionId,
         Rol rol
 ) {
+    public boolean puedeGestionar() {
+        return rol == Rol.ADMIN || rol == Rol.ARQUITECTO;
+    }
 }

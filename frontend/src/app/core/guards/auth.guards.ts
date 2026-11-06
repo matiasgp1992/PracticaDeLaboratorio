@@ -19,3 +19,9 @@ export const invitadoGuard: CanActivateFn = () => {
   const auth = inject(AuthService);
   return auth.estaLogueado() ? inject(Router).createUrlTree(['/inicio']) : true;
 };
+
+/** Solo ADMIN o ARQUITECTO (alta y edición de clientes y proyectos). */
+export const gestionGuard: CanActivateFn = () => {
+  const auth = inject(AuthService);
+  return auth.puedeGestionar() ? true : inject(Router).createUrlTree(['/inicio']);
+};
