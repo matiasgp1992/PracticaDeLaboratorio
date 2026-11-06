@@ -1,0 +1,189 @@
+<div class="mb-3">
+  <a routerLink="/proyectos" class="text-decoration-none">&larr; Volver a proyectos</a>
+</div>
+
+@if (cargando()) {
+  <div class="text-center py-5">
+    <div class="spinner-border text-secondary"></div>
+  </div>
+} @else if (proyecto(); as p) {
+  <div class="d-flex justify-content-between align-items-start mb-4">
+    <div>
+      <h1 class="h3 mb-1">
+        {{ p.nombre }}
+        <span [class]="'badge fs-6 align-middle ' + claseEstado(p.estado)">{{ etiquetaEstado(p.estado) }}</span>
+      </h1>
+      <p class="text-muted mb-0">
+        Cliente:
+        <a [routerLink]="['/proyectos']" [queryParams]="{ clienteId: p.clienteId }">{{ p.clienteDenominacion }}</a>
+        @if (!p.clienteActivo) {
+          <span class="badge bg-secondary ms-1">De baja</span>
+        }
+      </p>
+    </div>
+    @if (puedeGestionar()) {
+      <a [routerLink]="['/proyectos', p.id, 'editar']" class="btn btn-outline-primary">Editar</a>
+    }
+  </div>
+
+  @if (mensaje()) {
+    <div class="alert alert-success d-flex justify-content-between align-items-center py-2">
+      <span>{{ mensaje() }}</span>
+      <button type="button" class="btn-close" aria-label="Cerrar" (click)="mensaje.set(null)"></button>
+    </div>
+  }
+  @if (error()) {
+    <div class="alert alert-danger py-2">{{ error() }}</div>
+  }
+
+  <!-- Datos generales -->
+  <div class="card mb-3">
+    <div class="card-body">
+      <div class="row g-3">
+        <div class="col-md-6">
+          <small class="text-muted d-block">Dirección de la obra</small>
+          {{ p.direccionObra ?? '-' }}
+        </div>
+        <div class="col-md-3">
+          <small class="text-muted d-block">Inicio</small>
+          {{ p.fechaInicio ? (p.fechaInicio | date: 'dd/MM/yyyy') : '-' }}
+        </div>
+        <div class="col-md-3">
+          <small class="text-muted d-block">Fin estimado</small>
+          {{ p.fechaFinEstimada ? (p.fechaFinEstimada | date: 'dd/MM/yyyy') : '-' }}
+        </div>
+        @if (p.descripcion) {
+          <div class="col-12">
+            <small class="text-muted d-block">Descripción</small>
+            {{ p.descripcion }}
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+
+  <!-- Etapas -->
+  <div class="card mb-3">
+    <div class="card-body">
+      <h2 class="h5 mb-3">Etapa del proyecto</h2>
+      <div class="d-flex gap-2 flex-wrap mb-3">
+        @for (e of etapas; track e.valor; let i = $index) {
+          <div class="flex-fill text-center p-2 rounded border"
+               [class.bg-primary]="i === indiceEtapaActual()"
+               [class.text-white]="i === indiceEtapaActual()"
+               [class.bg-light]="i < indiceEtapaActual()">
+            <small class="d-block">Etapa {{ i + 1 }}</small>
+            <strong>{{ e.etiqueta }}</strong>
+          </div>
+        }
+      </div>
+
+      @if (p.estado === 'EN_CURSO') {
+        <form [formGroup]="etapaForm" (ngSubmit)="cambiarEtapa()" class="row g-2 align-items-end">
+          <div class="col-md-4">
+            <label for="etapa" class="form-label">Cambiar a</label>
+            <select id="etapa" class="form-select" formControlName="etapa">
+              <option value="" disabled>Seleccioná una etapa</option>
+              @for (e of etapas; track e.valor) {
+                @if (e.valor !== p.etapaActual) {
+                  <option [value]="e.valor">{{ e.etiqueta }}</option>
+                }
+              }
+            </select>
+          </div>
+          <div class="col-md-6">
+            <label for="observacion" class="form-label">Observación (opcional)</label>
+            <input id="observacion" class="form-control" formControlName="observacion">
+          </div>
+          <div class="col-md-2 d-grid">
+            <button type="submit" class="btn btn-primary" [disabled]="etapaForm.invalid">Actualizar</button>
+          </div>
+        </form>
+      } @else {
+        <p class="text-muted mb-0">
+          La etapa solo puede cambiarse cuando el proyecto está en curso.
+        </p>
+      }
+    </div>
+  </div>
+
+  <div class="row g-3">
+    <!-- Miembros -->
+    <div class="col-lg-6">
+      <div class="card h-100">
+        <div class="card-body">
+          <h2 class="h5 mb-3">Equipo del proyecto</h2>
+
+          <ul class="list-group mb-3">
+            @for (m of p.miembros; track m.usuarioId) {
+              <li class="list-group-item d-flex justify-content-between align-items-center">
+                <div>
+                  <strong>{{ m.nombre }} {{ m.apellido }}</strong>
+                  <div><small class="text-muted">{{ m.funcion }}</small></div>
+                </div>
+                @if (puedeGestionar()) {
+                  <button type="button" class="btn btn-sm btn-outline-danger" (click)="quitarMiembro(m)">
+                    Quitar
+                  </button>
+                }
+              </li>
+            } @empty {
+              <li class="list-group-item text-muted">Sin miembros asignados.</li>
+            }
+          </ul>
+
+          @if (puedeGestionar()) {
+            <form [formGroup]="miembroForm" (ngSubmit)="agregarMiembro()" class="row g-2 align-items-end">
+              <div class="col-md-5">
+                <label for="usuarioId" class="form-label">Usuario</label>
+                <select id="usuarioId" class="form-select" formControlName="usuarioId">
+                  <option [ngValue]="null" disabled>Seleccioná</option>
+                  @for (u of usuariosDisponibles(); track u.id) {
+                    <option [ngValue]="u.id">{{ u.nombre }} {{ u.apellido }}</option>
+                  }
+                </select>
+              </div>
+              <div class="col-md-5">
+                <label for="funcion" class="form-label">Función</label>
+                <input id="funcion" class="form-control" formControlName="funcion" placeholder="Ej: Proyectista">
+              </div>
+              <div class="col-md-2 d-grid">
+                <button type="submit" class="btn btn-outline-primary" [disabled]="miembroForm.invalid">Agregar</button>
+              </div>
+            </form>
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- Historial -->
+    <div class="col-lg-6">
+      <div class="card h-100">
+        <div class="card-body">
+          <h2 class="h5 mb-3">Historial de seguimiento</h2>
+          <ul class="list-group list-group-flush">
+            @for (h of p.historial; track h.id) {
+              <li class="list-group-item px-0">
+                <div class="d-flex justify-content-between">
+                  <strong>
+                    @if (h.etapaAnterior) {
+                      {{ etiquetaEtapa(h.etapaAnterior) }} &rarr;
+                    }
+                    {{ etiquetaEtapa(h.etapaNueva) }}
+                  </strong>
+                  <small class="text-muted">{{ h.fecha | date: 'dd/MM/yyyy HH:mm' }}</small>
+                </div>
+                <small class="text-muted">Por {{ h.usuarioNombre }}</small>
+                @if (h.observacion) {
+                  <div class="mt-1">{{ h.observacion }}</div>
+                }
+              </li>
+            }
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+} @else if (error()) {
+  <div class="alert alert-danger">{{ error() }}</div>
+}

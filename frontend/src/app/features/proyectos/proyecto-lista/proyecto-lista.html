@@ -1,0 +1,110 @@
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h1 class="h3 mb-0">Proyectos</h1>
+    <p class="text-muted mb-0">
+      {{ puedeGestionar() ? 'Proyectos de tu estudio' : 'Proyectos donde participás' }}
+    </p>
+  </div>
+  @if (puedeGestionar()) {
+    <a routerLink="/proyectos/nuevo" class="btn btn-primary">Nuevo proyecto</a>
+  }
+</div>
+
+@if (clienteFiltro(); as cf) {
+  <div class="alert alert-info d-flex justify-content-between align-items-center py-2">
+    <span>Historial de proyectos del cliente <strong>{{ cf.denominacion }}</strong></span>
+    <a routerLink="/proyectos" class="btn btn-sm btn-outline-secondary">Ver todos</a>
+  </div>
+}
+
+@if (error()) {
+  <div class="alert alert-danger py-2">{{ error() }}</div>
+}
+
+<form [formGroup]="filtros" class="card card-body mb-3">
+  <div class="row g-2">
+    <div class="col-md-6">
+      <input type="search" class="form-control" formControlName="texto"
+             placeholder="Buscar por nombre, dirección o cliente">
+    </div>
+    <div class="col-md-3">
+      <select class="form-select" formControlName="etapa">
+        <option value="">Todas las etapas</option>
+        @for (e of etapas; track e.valor) {
+          <option [value]="e.valor">{{ e.etiqueta }}</option>
+        }
+      </select>
+    </div>
+    <div class="col-md-3">
+      <select class="form-select" formControlName="estado">
+        <option value="">Todos los estados</option>
+        @for (e of estados; track e.valor) {
+          <option [value]="e.valor">{{ e.etiqueta }}</option>
+        }
+      </select>
+    </div>
+  </div>
+</form>
+
+@if (cargando()) {
+  <div class="text-center py-5">
+    <div class="spinner-border text-secondary"></div>
+  </div>
+} @else if (resultado(); as r) {
+  <div class="card">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light">
+          <tr>
+            <th>Proyecto</th>
+            <th>Cliente</th>
+            <th>Etapa</th>
+            <th>Estado</th>
+            <th>Fin estimado</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (p of r.contenido; track p.id) {
+            <tr>
+              <td>
+                <a [routerLink]="['/proyectos', p.id]" class="fw-semibold text-decoration-none">{{ p.nombre }}</a>
+                @if (p.direccionObra) {
+                  <div><small class="text-muted">{{ p.direccionObra }}</small></div>
+                }
+              </td>
+              <td>{{ p.clienteDenominacion }}</td>
+              <td>{{ etiquetaEtapa(p.etapaActual) }}</td>
+              <td><span class="badge" [class]="'badge ' + claseEstado(p.estado)">{{ etiquetaEstado(p.estado) }}</span></td>
+              <td>{{ p.fechaFinEstimada ?? '-' }}</td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="5" class="text-center text-muted py-4">No se encontraron proyectos.</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  @if (r.totalPaginas > 1) {
+    <div class="d-flex justify-content-between align-items-center mt-3">
+      <small class="text-muted">{{ r.totalElementos }} proyectos en total</small>
+      <nav>
+        <ul class="pagination pagination-sm mb-0">
+          <li class="page-item" [class.disabled]="r.pagina === 0">
+            <button type="button" class="page-link" (click)="irAPagina(r.pagina - 1)">Anterior</button>
+          </li>
+          @for (n of paginas(); track n) {
+            <li class="page-item" [class.active]="n === r.pagina">
+              <button type="button" class="page-link" (click)="irAPagina(n)">{{ n + 1 }}</button>
+            </li>
+          }
+          <li class="page-item" [class.disabled]="r.pagina === r.totalPaginas - 1">
+            <button type="button" class="page-link" (click)="irAPagina(r.pagina + 1)">Siguiente</button>
+          </li>
+        </ul>
+      </nav>
+    </div>
+  }
+}

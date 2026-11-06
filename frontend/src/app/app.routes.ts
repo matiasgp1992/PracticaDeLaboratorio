@@ -8,6 +8,9 @@ import { Usuarios } from './features/usuarios/usuarios';
 import { gestionGuard } from './core/guards/auth.guards';
 import { ClienteLista } from './features/clientes/cliente-lista/cliente-lista';
 import { ClienteForm } from './features/clientes/cliente-form/cliente-form';
+import { ProyectoLista } from './features/proyectos/proyecto-lista/proyecto-lista';
+import { ProyectoForm } from './features/proyectos/proyecto-form/proyecto-form';
+import { ProyectoDetallePagina } from './features/proyectos/proyecto-detalle/proyecto-detalle';
 
 export const routes: Routes = [
   { path: 'login', component: Login, canActivate: [invitadoGuard] },
@@ -22,6 +25,10 @@ export const routes: Routes = [
       { path: 'clientes', component: ClienteLista },
       { path: 'clientes/nuevo', component: ClienteForm, canActivate: [gestionGuard] },
       { path: 'clientes/:id/editar', component: ClienteForm, canActivate: [gestionGuard] },
+      { path: 'proyectos', component: ProyectoLista },
+      { path: 'proyectos/nuevo', component: ProyectoForm, canActivate: [gestionGuard] },
+      { path: 'proyectos/:id', component: ProyectoDetallePagina },
+      { path: 'proyectos/:id/editar', component: ProyectoForm, canActivate: [gestionGuard] },
       { path: '', redirectTo: 'inicio', pathMatch: 'full' }
     ]
   },

@@ -1,0 +1,148 @@
+<div class="mb-4">
+  <a routerLink="/proyectos" class="text-decoration-none">&larr; Volver a proyectos</a>
+  <h1 class="h3 mt-2 mb-0">{{ esEdicion() ? 'Editar proyecto' : 'Nuevo proyecto' }}</h1>
+</div>
+
+@if (cargando()) {
+  <div class="text-center py-5">
+    <div class="spinner-border text-secondary"></div>
+  </div>
+} @else {
+  @if (error()) {
+    <div class="alert alert-danger py-2">{{ error() }}</div>
+  }
+
+  <form [formGroup]="form" (ngSubmit)="guardar()" novalidate>
+    <div class="card mb-3">
+      <div class="card-body">
+        <h2 class="h5 mb-3">Datos del proyecto</h2>
+        <div class="row g-3">
+          <div class="col-md-8">
+            <label for="nombre" class="form-label">Nombre</label>
+            <input id="nombre" class="form-control" formControlName="nombre"
+                   [class.is-invalid]="invalido('nombre')">
+            <div class="invalid-feedback">El nombre es obligatorio.</div>
+          </div>
+          @if (esEdicion()) {
+            <div class="col-md-4">
+              <label for="estado" class="form-label">Estado</label>
+              <select id="estado" class="form-select" formControlName="estado">
+                @for (e of estados; track e.valor) {
+                  <option [value]="e.valor">{{ e.etiqueta }}</option>
+                }
+              </select>
+            </div>
+          }
+          <div class="col-12">
+            <label for="direccionObra" class="form-label">Dirección de la obra</label>
+            <input id="direccionObra" class="form-control" formControlName="direccionObra">
+          </div>
+          <div class="col-12">
+            <label for="descripcion" class="form-label">Descripción</label>
+            <textarea id="descripcion" class="form-control" rows="3" formControlName="descripcion"></textarea>
+          </div>
+          <div class="col-md-6">
+            <label for="fechaInicio" class="form-label">Fecha de inicio</label>
+            <input id="fechaInicio" type="date" class="form-control" formControlName="fechaInicio">
+          </div>
+          <div class="col-md-6">
+            <label for="fechaFinEstimada" class="form-label">Fecha de fin estimada</label>
+            <input id="fechaFinEstimada" type="date" class="form-control" formControlName="fechaFinEstimada">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card mb-3">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h2 class="h5 mb-0">Cliente</h2>
+          <div class="btn-group btn-group-sm">
+            <button type="button" class="btn"
+                    [class.btn-primary]="modoCliente() === 'existente'"
+                    [class.btn-outline-primary]="modoCliente() !== 'existente'"
+                    (click)="cambiarModoCliente('existente')">Cliente existente</button>
+            <button type="button" class="btn"
+                    [class.btn-primary]="modoCliente() === 'nuevo'"
+                    [class.btn-outline-primary]="modoCliente() !== 'nuevo'"
+                    (click)="cambiarModoCliente('nuevo')">Cliente nuevo</button>
+          </div>
+        </div>
+
+        @if (modoCliente() === 'existente') {
+          <select class="form-select" formControlName="clienteId" [class.is-invalid]="invalido('clienteId')">
+            <option [ngValue]="null" disabled>Seleccioná un cliente</option>
+            @for (c of clientes(); track c.id) {
+              <option [ngValue]="c.id">{{ c.denominacion }}</option>
+            }
+          </select>
+          <div class="invalid-feedback">Elegí un cliente.</div>
+          @if (clientes().length === 0) {
+            <small class="text-muted">Todavía no hay clientes cargados. Usá "Cliente nuevo".</small>
+          }
+        } @else {
+          <div [formGroup]="nuevoCliente">
+            <div class="btn-group btn-group-sm mb-3" role="group">
+              <input type="radio" class="btn-check" id="nc-fisica" name="nc-tipo"
+                     formControlName="tipo" value="PERSONA_FISICA">
+              <label class="btn btn-outline-secondary" for="nc-fisica">Persona física</label>
+              <input type="radio" class="btn-check" id="nc-juridica" name="nc-tipo"
+                     formControlName="tipo" value="PERSONA_JURIDICA">
+              <label class="btn btn-outline-secondary" for="nc-juridica">Persona jurídica</label>
+            </div>
+
+            <div class="row g-3">
+              @if (esFisica()) {
+                <div class="col-md-6">
+                  <label for="nc-nombre" class="form-label">Nombre</label>
+                  <input id="nc-nombre" class="form-control" formControlName="nombre"
+                         [class.is-invalid]="invalidoCliente('nombre')">
+                  <div class="invalid-feedback">Obligatorio.</div>
+                </div>
+                <div class="col-md-6">
+                  <label for="nc-apellido" class="form-label">Apellido</label>
+                  <input id="nc-apellido" class="form-control" formControlName="apellido"
+                         [class.is-invalid]="invalidoCliente('apellido')">
+                  <div class="invalid-feedback">Obligatorio.</div>
+                </div>
+              } @else {
+                <div class="col-12">
+                  <label for="nc-razon" class="form-label">Razón social</label>
+                  <input id="nc-razon" class="form-control" formControlName="razonSocial"
+                         [class.is-invalid]="invalidoCliente('razonSocial')">
+                  <div class="invalid-feedback">Obligatoria.</div>
+                </div>
+              }
+              <div class="col-md-4">
+                <label for="nc-documento" class="form-label">{{ esFisica() ? 'DNI o CUIT' : 'CUIT' }}</label>
+                <input id="nc-documento" class="form-control" formControlName="documento"
+                       [class.is-invalid]="invalidoCliente('documento')">
+                <div class="invalid-feedback">Obligatorio (máximo 13 caracteres).</div>
+              </div>
+              <div class="col-md-4">
+                <label for="nc-email" class="form-label">Email</label>
+                <input id="nc-email" type="email" class="form-control" formControlName="email"
+                       [class.is-invalid]="invalidoCliente('email')">
+                <div class="invalid-feedback">Email inválido.</div>
+              </div>
+              <div class="col-md-4">
+                <label for="nc-telefono" class="form-label">Teléfono</label>
+                <input id="nc-telefono" class="form-control" formControlName="telefono">
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+
+    <div class="d-flex justify-content-end gap-2">
+      <a routerLink="/proyectos" class="btn btn-outline-secondary">Cancelar</a>
+      <button type="submit" class="btn btn-primary" [disabled]="guardando()">
+        @if (guardando()) {
+          <span class="spinner-border spinner-border-sm me-2"></span>
+        }
+        {{ esEdicion() ? 'Guardar cambios' : 'Crear proyecto' }}
+      </button>
+    </div>
+  </form>
+}
